@@ -23,6 +23,18 @@ export default function Canvas({
     setHistoryStep(newHistory.length - 1);
   }
 
+  function loadFromHistory(step) {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const img = new Image();
+
+    img.src = history[step];
+    img.onload = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.drawImage(img, 0, 0);
+    };
+  }
+
   function startDrawing(e) {
     isDrawing.current = true;
     const canvas = canvasRef.current;
@@ -62,6 +74,43 @@ export default function Canvas({
     }
     isDrawing.current = false;
   }
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+
+    ctx.fillStyle = "white";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    saveToHistory();
+  }, []);
+
+  useEffect(() => {
+    if (clearCanvas) {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "white";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      saveToHistory();
+    }
+  }, [clearCanvas]);
+
+  useEffect(() => {
+    if (undo && historyStep > 0) {
+      const newStep = historyStep - 1;
+      setHistoryStep(newStep);
+      loadFromHistory(newStep);
+    }
+  }, [undo]);
+
+  useEffect(() => {
+    if (redo && historyStep < history.length - 1) {
+      const newStep = historyStep + 1;
+      setHistoryStep(newStep);
+      loadFromHistory(newStep);
+    }
+  }, [redo]);
 
   return (
     <div className="canvas-container">
