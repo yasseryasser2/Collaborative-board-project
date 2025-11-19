@@ -22,9 +22,10 @@ export default function Canvas({
     setHistory(newHistory);
     setHistoryStep(newHistory.length - 1);
   }
+
   function startDrawing(e) {
     isDrawing.current = true;
-    let canvas = canvasRef.current;
+    const canvas = canvasRef.current;
     const ctx = canvas.getContext("2d");
     const rect = canvas.getBoundingClientRect();
 
@@ -35,16 +36,43 @@ export default function Canvas({
     ctx.moveTo(x, y);
   }
 
+  function draw(e) {
+    if (isDrawing.current === false) {
+      return;
+    }
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext("2d");
+    const rect = canvas.getBoundingClientRect();
+
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    ctx.strokeStyle = currentColor;
+    ctx.lineWidth = brushSize;
+    ctx.lineCap = "round";
+    ctx.lineJoin = "round";
+
+    ctx.lineTo(x, y);
+    ctx.stroke();
+  }
+
+  function stopDrawing() {
+    if (isDrawing.current === true) {
+      saveToHistory();
+    }
+    isDrawing.current = false;
+  }
+
   return (
     <div className="canvas-container">
       <canvas
         ref={canvasRef}
         width={800}
         height={600}
-        onMouseDown={() => {}}
-        onMouseMove={() => {}}
-        onMouseUp={() => {}}
-        onMouseLeave={() => {}}
+        onMouseDown={startDrawing}
+        onMouseMove={draw}
+        onMouseUp={stopDrawing}
+        onMouseLeave={stopDrawing}
       ></canvas>
     </div>
   );
